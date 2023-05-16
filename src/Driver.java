@@ -1,10 +1,12 @@
 import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -17,6 +19,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.Timer;
 
 import org.openstreetmap.gui.jmapviewer.Coordinate;
@@ -26,6 +29,7 @@ import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
 
 public class Driver extends JFrame implements ActionListener
 {
+	private static final long serialVersionUID = 1L;
 	// Declare class data
 	public GridBagConstraints layout;
 	public JPanel userPanel;
@@ -33,9 +37,10 @@ public class Driver extends JFrame implements ActionListener
 	public JComboBox<String> animationComboBox;
 	public JCheckBox stopCheckBox;
 	public JButton playButton;
+	public JProgressBar progressBar;
 	public JMapViewer map;
 	public static Timer timer;
-	Image icon = ImageIO.read(new File("raccoon.png"));
+	BufferedImage icon = ImageIO.read(new File("arrow.png"));
 	
 	int animationTime = 0;
 	boolean includesStops;
@@ -78,6 +83,9 @@ public class Driver extends JFrame implements ActionListener
 				}
 				
 				index = 1;
+				progressBar.setMinimum(index);
+				progressBar.setMaximum(trip.size());
+				progressBar.setVisible(true);
 				timer = new Timer(animationTime / trip.size(), Driver.this);
 				timer.setInitialDelay(0);
 				timer.start();
@@ -86,11 +94,13 @@ public class Driver extends JFrame implements ActionListener
 
 		stopCheckBox = new JCheckBox("Include Stops");
 		animationComboBox = new JComboBox<String>(new String[] { "Animation Time", "15", "30", "60", "90" });
+		progressBar = new JProgressBar();
+		progressBar.setStringPainted(true);
 
 		// Create JMapViewer
 		map = new JMapViewer();
 		map.setTileSource(new OsmTileSource.TransportMap());
-		// map.setDisplayPosition(new Coordinate(35.211037,-97.438866), 5);
+		map.setDisplayPosition(new Coordinate(35.211037,-97.438866), 5);
 
 		// Create user input panel and add components to it
 		userPanel = new JPanel();
@@ -111,6 +121,13 @@ public class Driver extends JFrame implements ActionListener
 		layout.gridx = 2;
 		layout.gridy = 0;
 		userPanel.add(playButton, layout);
+		
+		layout = new GridBagConstraints();
+		layout.gridx = 3;
+		layout.gridy = 0;
+		layout.insets = new Insets(0, 10, 0, 0);
+		userPanel.add(progressBar, layout);
+		progressBar.setVisible(false);
 
 		// Create map panel and add JMapViewer
 		mapPanel = new JPanel();
@@ -150,19 +167,31 @@ public class Driver extends JFrame implements ActionListener
 	{
 		if(index < trip.size())
 		{
+			mapPanel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			map.removeAllMapMarkers();
+			
 			Coordinate currentPoint = new Coordinate(trip.get(index).getLat(), trip.get(index).getLon());
 			Coordinate previousPoint = new Coordinate(trip.get(index - 1).getLat(), trip.get(index - 1).getLon());
 			
-			IconMarker raccoon = new IconMarker(currentPoint, icon);
+			double angle = Math.atan2((currentPoint.getLon() - previousPoint.getLon()), (currentPoint.getLat() - previousPoint.getLat()));			
+			
+			BufferedImage rotatedArrow = new BufferedImage(icon.getWidth(), icon.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g2d = rotatedArrow.createGraphics();
+			g2d.rotate(angle, (icon.getWidth() / 2), (icon.getHeight() / 2));
+			g2d.drawImage(icon, null, 0,0);
+			g2d.dispose();
+			
+			IconMarker raccoon = new IconMarker(currentPoint, rotatedArrow);
 			map.addMapMarker(raccoon);
 			MapPolygonImpl line = new MapPolygonImpl(currentPoint, previousPoint, previousPoint);
 			line.setColor(Color.red);
 			map.addMapPolygon(line);
+			progressBar.setValue(index);
 			++index;
 		}
 		else
 		{
+			mapPanel.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			Timer source = (Timer) event.getSource();
 			source.stop();
 			index = 1;
