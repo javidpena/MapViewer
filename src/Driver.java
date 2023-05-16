@@ -42,6 +42,7 @@ public class Driver extends JFrame implements ActionListener
 	public static Timer timer;
 	BufferedImage icon = ImageIO.read(new File("arrow.png"));
 	
+	private static final int ZOOM_LEVEL = 5;
 	int animationTime = 0;
 	boolean includesStops;
 	ArrayList<TripPoint> trip;
@@ -55,26 +56,15 @@ public class Driver extends JFrame implements ActionListener
 		{	
 			@Override
 			public void actionPerformed(ActionEvent e)
-			{
-				String comboSelection = (String) animationComboBox.getSelectedItem();
-				if(comboSelection.equals("Animation Time"))
+			{				
+				setupAnimation();
+				
+				if(trip == null)
 				{
-					JOptionPane.showMessageDialog(Driver.this, "Select a time for the animation.");
 					return;
 				}
-				animationTime = Integer.parseInt(comboSelection) * 1000;
 				
-				includesStops = stopCheckBox.isSelected();
-				if(includesStops)
-				{
-					trip = TripPoint.getTrip();
-				}
-				else
-				{
-					trip = TripPoint.getMovingTrip();
-				}
-				
-				map.setDisplayPosition(new Coordinate(trip.get(0).getLat(), trip.get(0).getLon()), 5);
+				centerMap(new Coordinate(trip.get(0).getLat(), trip.get(0).getLon()));
 				map.removeAllMapPolygons();
 				
 				if (timer != null)
@@ -197,7 +187,32 @@ public class Driver extends JFrame implements ActionListener
 			index = 1;
 		}
 	}
-
+	
+	public void setupAnimation()
+	{
+		String comboSelection = (String) animationComboBox.getSelectedItem();
+		if(comboSelection.equals("Animation Time"))
+		{
+			JOptionPane.showMessageDialog(Driver.this, "Select a time for the animation.");
+			return;
+		}
+		animationTime = Integer.parseInt(comboSelection) * 1000;
+		
+		includesStops = stopCheckBox.isSelected();
+		if(includesStops)
+		{
+			trip = TripPoint.getTrip();
+		}
+		else
+		{
+			trip = TripPoint.getMovingTrip();
+		}
+	}
+	
+	public void centerMap(Coordinate coord)
+	{
+		map.setDisplayPosition(coord, ZOOM_LEVEL);
+	}
 
 	public static void main(String[] args) throws FileNotFoundException, IOException
 	{
