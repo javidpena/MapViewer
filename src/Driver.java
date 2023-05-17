@@ -75,7 +75,7 @@ public class Driver extends JFrame implements ActionListener
 				index = 1;
 				progressBar.setMinimum(index);
 				progressBar.setMaximum(trip.size());
-				progressBar.setVisible(true);
+				progressBar.setStringPainted(true);
 				timer = new Timer(animationTime / trip.size(), Driver.this);
 				timer.setInitialDelay(0);
 				timer.start();
@@ -85,7 +85,6 @@ public class Driver extends JFrame implements ActionListener
 		stopCheckBox = new JCheckBox("Include Stops");
 		animationComboBox = new JComboBox<String>(new String[] { "Animation Time", "15", "30", "60", "90" });
 		progressBar = new JProgressBar();
-		progressBar.setStringPainted(true);
 
 		// Create JMapViewer
 		map = new JMapViewer();
@@ -117,7 +116,6 @@ public class Driver extends JFrame implements ActionListener
 		layout.gridy = 0;
 		layout.insets = new Insets(0, 10, 0, 0);
 		userPanel.add(progressBar, layout);
-		progressBar.setVisible(false);
 
 		// Create map panel and add JMapViewer
 		mapPanel = new JPanel();
