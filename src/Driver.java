@@ -47,6 +47,7 @@ public class Driver extends JFrame implements ActionListener
 	boolean includesStops;
 	ArrayList<TripPoint> trip;
 	int index = 1;
+	boolean isPlaying = false;
 
 	public Driver() throws IOException
 	{
@@ -56,29 +57,43 @@ public class Driver extends JFrame implements ActionListener
 		{	
 			@Override
 			public void actionPerformed(ActionEvent e)
-			{				
-				setupAnimation();
-				
-				if(trip == null)
+			{		
+				if(!isPlaying)
 				{
-					return;
+					setupAnimation();
+					
+					if(trip == null)
+					{
+						return;
+					}
+					
+					centerMap(new Coordinate(trip.get(0).getLat(), trip.get(0).getLon()));
+					
+//					if (timer != null)
+//					{
+//						timer.stop();
+//					}
+					
+//					index = 1;
+					progressBar.setMinimum(index);
+					progressBar.setMaximum(trip.size());
+					progressBar.setStringPainted(true);
+					timer = new Timer(animationTime / trip.size(), Driver.this);
+					timer.setInitialDelay(0);
+					timer.start();
 				}
-				
-				centerMap(new Coordinate(trip.get(0).getLat(), trip.get(0).getLon()));
-				map.removeAllMapPolygons();
-				
-				if (timer != null)
+				else
 				{
 					timer.stop();
+					index = 1;
+					map.removeAllMapMarkers();
+					map.removeAllMapPolygons();
+					progressBar.setStringPainted(false);
+					progressBar.setValue(index);
 				}
 				
-				index = 1;
-				progressBar.setMinimum(index);
-				progressBar.setMaximum(trip.size());
-				progressBar.setStringPainted(true);
-				timer = new Timer(animationTime / trip.size(), Driver.this);
-				timer.setInitialDelay(0);
-				timer.start();
+				isPlaying = !isPlaying;
+				playButton.setText(isPlaying ? "Stop" : "Play");
 			}
 		});
 
@@ -98,23 +113,26 @@ public class Driver extends JFrame implements ActionListener
 		layout = new GridBagConstraints();
 		layout.gridx = 0;
 		layout.gridy = 0;
+		layout.insets = new Insets(0, 10, 0, 10);
 		layout.anchor = GridBagConstraints.LINE_START;
 		userPanel.add(animationComboBox, layout);
 
 		layout = new GridBagConstraints();
 		layout.gridx = 1;
 		layout.gridy = 0;
+		layout.insets = new Insets(0, 10, 0, 10);
 		userPanel.add(stopCheckBox, layout);
 
 		layout = new GridBagConstraints();
 		layout.gridx = 2;
 		layout.gridy = 0;
+		layout.insets = new Insets(0, 10, 0, 10);
 		userPanel.add(playButton, layout);
 		
 		layout = new GridBagConstraints();
 		layout.gridx = 3;
 		layout.gridy = 0;
-		layout.insets = new Insets(0, 10, 0, 0);
+		layout.insets = new Insets(0, 10, 0, 10);
 		userPanel.add(progressBar, layout);
 
 		// Create map panel and add JMapViewer
