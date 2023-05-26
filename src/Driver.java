@@ -124,7 +124,7 @@ public class Driver extends JFrame implements ActionListener
 				}
 				else
 				{
-					JOptionPane.showMessageDialog(Driver.this, "Please select a file.");
+					JOptionPane.showMessageDialog(Driver.this, "Please select a file.", "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -262,14 +262,14 @@ public class Driver extends JFrame implements ActionListener
 			TripPoint.h2StopDetection();
 		} catch (Exception e)
 		{
-			JOptionPane.showMessageDialog(Driver.this, "Select a file.");
+			JOptionPane.showMessageDialog(Driver.this, "Select a file.", "Error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		
 		String comboSelection = (String) animationComboBox.getSelectedItem();
 		if(comboSelection.equals("Animation Time"))
 		{
-			JOptionPane.showMessageDialog(Driver.this, "Select a time for the animation.");
+			JOptionPane.showMessageDialog(Driver.this, "Select a time for the animation.", "Error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		animationTime = Integer.parseInt(comboSelection) * 1000;
