@@ -23,6 +23,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.Timer;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.JMapViewer;
@@ -49,6 +50,7 @@ public class Driver extends JFrame implements ActionListener
 	BufferedImage icon = ImageIO.read(new File("arrow.png"));
 	
 	private static final int ZOOM_LEVEL = 5;
+	String filename;
 	int animationTime = 0;
 	boolean includesStops;
 	ArrayList<TripPoint> trip;
@@ -57,9 +59,9 @@ public class Driver extends JFrame implements ActionListener
 
 	public Driver() throws IOException
 	{
-		// Read file and call stop detection
-		TripPoint.readFile("triplog.csv");
-		TripPoint.h2StopDetection();
+//		// Read file and call stop detection
+//		TripPoint.readFile(filename);
+//		TripPoint.h2StopDetection();
 		
 		// Initialize components
 		playButton = new JButton("Play");
@@ -96,6 +98,7 @@ public class Driver extends JFrame implements ActionListener
 				{
 					timer.stop();
 					index = 1;
+					centerMap(new Coordinate(trip.get(index).getLat(), trip.get(index).getLon()));
 					map.removeAllMapMarkers();
 					map.removeAllMapPolygons();
 					progressBar.setStringPainted(false);
@@ -108,11 +111,30 @@ public class Driver extends JFrame implements ActionListener
 		});
 		
 		openFileButton = new JButton("Open File");
+		openFileButton.addActionListener(new ActionListener()
+		{
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				int returnValue = fileChooser.showOpenDialog(Driver.this);
+				if(returnValue == JFileChooser.APPROVE_OPTION)
+				{
+					filename = fileChooser.getName(fileChooser.getSelectedFile());
+					fileLabel.setText(filename + " selected.");
+				}
+				else
+				{
+					JOptionPane.showMessageDialog(Driver.this, "Please select a file.");
+				}
+			}
+		});
 
 		stopCheckBox = new JCheckBox("Include Stops");
 		animationComboBox = new JComboBox<String>(new String[] { "Animation Time", "15", "30", "60", "90" });
 		progressBar = new JProgressBar();
 		fileLabel = new JLabel("Select File: ");
+		fileChooser = new JFileChooser();
+		fileChooser.setFileFilter(new FileNameExtensionFilter("CSV files", "csv"));
 
 		// Create JMapViewer
 		map = new JMapViewer();
@@ -233,6 +255,17 @@ public class Driver extends JFrame implements ActionListener
 	
 	public void setupAnimation()
 	{
+		// Read file and call stop detection
+		try
+		{
+			TripPoint.readFile(filename);
+			TripPoint.h2StopDetection();
+		} catch (Exception e)
+		{
+			JOptionPane.showMessageDialog(Driver.this, "Select a file.");
+			return;
+		}
+		
 		String comboSelection = (String) animationComboBox.getSelectedItem();
 		if(comboSelection.equals("Animation Time"))
 		{
