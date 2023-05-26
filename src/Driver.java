@@ -16,7 +16,9 @@ import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -33,12 +35,16 @@ public class Driver extends JFrame implements ActionListener
 	// Declare class data
 	public GridBagConstraints layout;
 	public JPanel userPanel;
-	public JPanel mapPanel;
+	public JLabel fileLabel;
+	public JButton openFileButton;
 	public JComboBox<String> animationComboBox;
 	public JCheckBox stopCheckBox;
 	public JButton playButton;
 	public JProgressBar progressBar;
+	public JFileChooser fileChooser;
+	public JPanel mapPanel;
 	public JMapViewer map;
+	
 	public static Timer timer;
 	BufferedImage icon = ImageIO.read(new File("arrow.png"));
 	
@@ -51,6 +57,10 @@ public class Driver extends JFrame implements ActionListener
 
 	public Driver() throws IOException
 	{
+		// Read file and call stop detection
+		TripPoint.readFile("triplog.csv");
+		TripPoint.h2StopDetection();
+		
 		// Initialize components
 		playButton = new JButton("Play");
 		playButton.addActionListener(new ActionListener()
@@ -96,10 +106,13 @@ public class Driver extends JFrame implements ActionListener
 				playButton.setText(isPlaying ? "Stop" : "Play");
 			}
 		});
+		
+		openFileButton = new JButton("Open File");
 
 		stopCheckBox = new JCheckBox("Include Stops");
 		animationComboBox = new JComboBox<String>(new String[] { "Animation Time", "15", "30", "60", "90" });
 		progressBar = new JProgressBar();
+		fileLabel = new JLabel("Select File: ");
 
 		// Create JMapViewer
 		map = new JMapViewer();
@@ -113,24 +126,36 @@ public class Driver extends JFrame implements ActionListener
 		layout = new GridBagConstraints();
 		layout.gridx = 0;
 		layout.gridy = 0;
+		layout.insets = new Insets(0, 10, 0, 5);
+		userPanel.add(fileLabel, layout);
+		
+		layout = new GridBagConstraints();
+		layout.gridx = 1;
+		layout.gridy = 0;
+		layout.insets = new Insets(0, 0, 0, 10);
+		userPanel.add(openFileButton, layout);
+		
+		layout = new GridBagConstraints();
+		layout.gridx = 2;
+		layout.gridy = 0;
 		layout.insets = new Insets(0, 10, 0, 10);
 		layout.anchor = GridBagConstraints.LINE_START;
 		userPanel.add(animationComboBox, layout);
 
 		layout = new GridBagConstraints();
-		layout.gridx = 1;
+		layout.gridx = 3;
 		layout.gridy = 0;
 		layout.insets = new Insets(0, 10, 0, 10);
 		userPanel.add(stopCheckBox, layout);
 
 		layout = new GridBagConstraints();
-		layout.gridx = 2;
+		layout.gridx = 4;
 		layout.gridy = 0;
 		layout.insets = new Insets(0, 10, 0, 10);
 		userPanel.add(playButton, layout);
 		
 		layout = new GridBagConstraints();
-		layout.gridx = 3;
+		layout.gridx = 5;
 		layout.gridy = 0;
 		layout.insets = new Insets(0, 10, 0, 10);
 		userPanel.add(progressBar, layout);
@@ -163,7 +188,8 @@ public class Driver extends JFrame implements ActionListener
 		
 		// frame setup
 		setTitle("Project 5 - Javid Pena-Limones");
-		setSize(400, 400);
+		setExtendedState(MAXIMIZED_BOTH);
+		//setSize(400,400);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setVisible(true);
 	}
@@ -194,6 +220,7 @@ public class Driver extends JFrame implements ActionListener
 			map.addMapPolygon(line);
 			progressBar.setValue(index);
 			++index;
+			centerMap(currentPoint);
 		}
 		else
 		{
@@ -232,11 +259,6 @@ public class Driver extends JFrame implements ActionListener
 
 	public static void main(String[] args) throws FileNotFoundException, IOException
 	{
-		// Read file and call stop detection
-		TripPoint.readFile("triplog.csv");
-		TripPoint.h2StopDetection();
-
-		// Set up frame, include your name in the title
 		new Driver();
 	}
 }
