@@ -74,7 +74,7 @@ public class Driver extends JFrame implements ActionListener
 				{
 					setupAnimation();
 					
-					if(trip == null)
+					if(trip == null || timer != null || animationTime == -1)
 					{
 						return;
 					}
@@ -97,6 +97,8 @@ public class Driver extends JFrame implements ActionListener
 				else
 				{
 					timer.stop();
+					timer = null;
+					mapPanel.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 					index = 1;
 					centerMap(new Coordinate(trip.get(index).getLat(), trip.get(index).getLon()));
 					map.removeAllMapMarkers();
@@ -251,7 +253,7 @@ public class Driver extends JFrame implements ActionListener
 			source.stop();
 			index = 1;
 		}
-	}
+	}	
 	
 	public void setupAnimation()
 	{
@@ -269,6 +271,7 @@ public class Driver extends JFrame implements ActionListener
 		String comboSelection = (String) animationComboBox.getSelectedItem();
 		if(comboSelection.equals("Animation Time"))
 		{
+			animationTime = -1;
 			JOptionPane.showMessageDialog(Driver.this, "Select a time for the animation.", "Error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
